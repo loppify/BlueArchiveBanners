@@ -1,26 +1,29 @@
 {% for banner in banners %}
 <tr>
     <td><img src="{{ banner.image_url }}" alt="banner"></td>
-    <td>{{ banner.units|join(', ') }}</td>
+    <td>
+        <p>{{ banner.units|join(', ') }}</p>
+        <i>{{ banner.asia_type }}</i>
+    </td>
 
     <td class="date-cell">
         {% if banner.asia_start %}
-            <span class="asia">(Asia) {{ banner.start_str_asia }} [{{ banner.asia_type }}]</span>
+        <span class="asia">(Asia) {{ banner.start_str_asia }}</span>
         {% endif %}
         {% if banner.global_start %}
-            <span class="{{ 'predicted' if banner.global_is_predicted else 'global' }}">
-                (Global) {{ banner.start_str_global }} [{{ banner.global_type }}]
+        <span class="{{ 'predicted' if banner.global_is_predicted else 'global' }}">
+                (Global) {{ banner.start_str_global }}
             </span>
         {% endif %}
     </td>
 
     <td class="date-cell">
         {% if banner.asia_end %}
-            <span class="asia">(Asia) {{ banner.end_str_asia }} [{{ banner.asia_type }}]</span>
+        <span class="asia">(Asia) {{ banner.end_str_asia }}</span>
         {% endif %}
         {% if banner.global_end %}
-            <span class="{{ 'predicted' if banner.global_is_predicted else 'global' }}">
-                (Global) {{ banner.end_str_global }} [{{ banner.global_type }}]
+        <span class="{{ 'predicted' if banner.global_is_predicted else 'global' }}">
+                (Global) {{ banner.end_str_global }}
             </span>
         {% endif %}
     </td>

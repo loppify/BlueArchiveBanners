@@ -1,22 +1,32 @@
 from flask import Flask, render_template, request, make_response, redirect, url_for
 from predictor_logic import BannerManager
+from flask_caching import Cache
+import time
 
 app = Flask(__name__)
 
-print("Initializing BannerManager... This may take a moment.")
-manager = BannerManager()
-manager.load_data()
-print("Data loaded. Flask server is ready.")
+config = {
+    "DEBUG": True,
+    "CACHE_TYPE": "SimpleCache",
+    "CACHE_DEFAULT_TIMEOUT": 3600
+}
+app.config.from_mapping(config)
+cache = Cache(app)
 
 
 @app.route('/')
 def index():
+    manager = get_banner_manager()
+
+    search_query = request.args.get('search', '')
     theme = request.cookies.get('theme', 'light')
+
+    filtered_banners = manager.get_filtered_banners(search_query)
 
     return render_template(
         'index.html',
-        banners=manager.merged_banners,
-        search_query="",
+        banners=filtered_banners,
+        search_query=search_query,
         theme=theme,
         total_banners=len(manager.merged_banners)
     )
@@ -24,6 +34,7 @@ def index():
 
 @app.route('/search-api')
 def search_api():
+    manager = get_banner_manager()
     search_query = request.args.get('search', '')
 
     filtered_banners = manager.get_filtered_banners(search_query)
@@ -42,6 +53,19 @@ def set_theme(theme_name):
     response = make_response(redirect(request.referrer or url_for('index')))
     response.set_cookie('theme', theme_name, max_age=60 * 60 * 24 * 365)  # 1 year
     return response
+
+
+@cache.memoize(timeout=3600)
+def get_banner_manager():
+    start_time = time.time()
+    print("ЗАПУСК ПАРСИНГУ (КЕШ ПРОБИТО)...")
+
+    manager = BannerManager()
+    manager.load_data()
+
+    end_time = time.time()
+    print(f"Парсинг завершено за {end_time - start_time:.2f} секунд.")
+    return manager
 
 
 if __name__ == '__main__':

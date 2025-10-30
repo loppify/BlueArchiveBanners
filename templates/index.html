@@ -16,6 +16,7 @@
             --global-color: #5bc0de;
             --global-pred-color: #f0ad4e;
         }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             margin: 0;
@@ -24,6 +25,7 @@
             color: var(--text-color);
             transition: background-color 0.2s, color 0.2s;
         }
+
         body.dark {
             --bg-color: #1a1a1a;
             --text-color: #e0e0e0;
@@ -36,15 +38,17 @@
             --global-color: #81d4fa;
             --global-pred-color: #ffd54f;
         }
+
         .container {
             max-width: 1200px;
             margin: auto;
             padding: 20px;
             background-color: var(--card-bg);
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
             transition: background-color 0.2s;
         }
+
         .header {
             display: flex;
             justify-content: space-between;
@@ -52,6 +56,7 @@
             border-bottom: 1px solid var(--border-color);
             padding-bottom: 10px;
         }
+
         .theme-toggle {
             padding: 8px 12px;
             background-color: var(--border-color);
@@ -61,9 +66,19 @@
             text-decoration: none;
             cursor: pointer;
         }
-        .theme-toggle:hover { opacity: 0.8; }
-        h1 { color: var(--link-color); }
-        form { margin: 20px 0; }
+
+        .theme-toggle:hover {
+            opacity: 0.8;
+        }
+
+        h1 {
+            color: var(--link-color);
+        }
+
+        form {
+            margin: 20px 0;
+        }
+
         input[type="text"] {
             width: 98%;
             max-width: 500px;
@@ -74,79 +89,170 @@
             color: var(--text-color);
             border-radius: 4px;
         }
+
         table {
             border-collapse: collapse;
             width: 100%;
             margin-top: 20px;
+
         }
+
         th, td {
             border: 1px solid var(--border-color);
-            padding: 10px;
             text-align: center;
             vertical-align: center;
             font-size: 0.9em;
         }
-        th { background-color: var(--card-bg); }
-        body.dark th { background-color: #333; }
-        img { max-height: 150px; border-radius: 4px; }
-        .date-cell { white-space: nowrap; }
-        .date-cell span { display: block; }
-        .asia { color: var(--asia-color); }
-        .global { color: var(--global-color); }
-        .predicted { color: var(--global-pred-color); font-style: italic; }
+
+        th {
+            background-color: var(--card-bg);
+        }
+
+        body.dark th {
+            background-color: #333;
+        }
+
+        img {
+            min-height: 150px;
+            border-radius: 4px;
+        }
+
+        .date-cell {
+            white-space: nowrap;
+        }
+
+        .date-cell span {
+            display: block;
+        }
+
+        .asia {
+            color: var(--asia-color);
+        }
+
+        .global {
+            color: var(--global-color);
+        }
+
+        .predicted {
+            color: var(--global-pred-color);
+            font-style: italic;
+        }
+
+        th.sortable {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        th.sortable:hover {
+            opacity: 0.7;
+        }
     </style>
 </head>
 <body class="{{ theme }}">
-    <div class="container">
+<div class="container">
 
-        <div class="header">
-            <h1>Blue Archive Banner List ({{ total_banners }} total)</h1>
+    <div class="header">
+        <h1>Blue Archive Banner List ({{ total_banners }} total)</h1>
+
+        <div style="display: flex; gap: 10px;">
+
             {% if theme == 'dark' %}
-                <a href="/set-theme/light" class="theme-toggle">Light Mode ☀️</a>
+            <a href="/set-theme/light" class="theme-toggle">Light Mode ☀️</a>
             {% else %}
-                <a href="/set-theme/dark" class="theme-toggle">Dark Mode 🌙</a>
+            <a href="/set-theme/dark" class="theme-toggle">Dark Mode 🌙</a>
             {% endif %}
         </div>
-
-        <div style="margin: 20px 0;">
-            <input type="text" id="search-input" value="{{ search_query or '' }}"
-                   placeholder="Search by unit, date, or 'rerun'...">
-        </div>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>Banner</th>
-                    <th>Units</th>
-                    <th>Start Date</th>
-                    <th>End Date</th>
-                </tr>
-            </thead>
-            <tbody id="banner-table-body">
-                {% include 'partials/table_rows.html' %}
-            </tbody>
-        </table>
+    </div>
+    <h2>Prediction of future banner on Global server using data about banners on Asia server</h2>
+    <div style="margin: 20px 0;">
+        <input type="text" id="search-input" value="{{ search_query or '' }}"
+               placeholder="Search by unit, date, or 'rerun'...">
+        <button id="reset-sort-btn" class="theme-toggle">Reset Sort</button>
     </div>
 
-    <script>
-        let timeout = null;
-        const searchInput = document.getElementById('search-input');
-        const tableBody = document.getElementById('banner-table-body');
+    <table>
+        <thead>
+        <tr>
+            <th data-sort-col="1">Banner</th>
+            <th class="sortable" data-sort-col="2">Units</th>
+            <th class="sortable" data-sort-col="3">Start Date</th>
+            <th class="sortable" data-sort-col="4">End Date</th>
+        </tr>
+        </thead>
+        <tbody id="banner-table-body">
+        {% include 'partials/table_rows.html' %}
+        </tbody>
+    </table>
+</div>
 
-        searchInput.addEventListener('keyup', function (e) {
-            clearTimeout(timeout);
+<script>
+    let timeout = null;
+    const searchInput = document.getElementById('search-input');
+    const tableBody = document.getElementById('banner-table-body');
 
-            timeout = setTimeout(function () {
-                const query = searchInput.value;
+    searchInput.addEventListener('keyup', function (e) {
+        clearTimeout(timeout);
 
-                fetch(`/search-api?search=${encodeURIComponent(query)}`)
-                    .then(response => response.text())
-                    .then(html => {
-                        tableBody.innerHTML = html;
-                    })
-                    .catch(error => console.error('Error fetching search results:', error));
-            }, 300);
+        timeout = setTimeout(function () {
+            const query = searchInput.value;
+
+            fetch(`/search-api?search=${encodeURIComponent(query)}`)
+                .then(response => response.text())
+                .then(html => {
+                    tableBody.innerHTML = html;
+                })
+                .catch(error => console.error('Error fetching search results:', error));
+        }, 300);
+    });
+</script>
+
+<script>
+    document.querySelectorAll('th.sortable').forEach(headerCell => {
+        headerCell.addEventListener('click', () => {
+            const table = headerCell.closest('table');
+            const tbody = table.querySelector('tbody');
+            const colIndex = parseInt(headerCell.dataset.sortCol, 10);
+
+            const currentDir = headerCell.dataset.sortDir === 'asc' ? 'desc' : 'asc';
+            headerCell.dataset.sortDir = currentDir;
+
+            Array.from(tbody.querySelectorAll('tr'))
+                .sort((rowA, rowB) => {
+                    let cellA = rowA.querySelectorAll('td')[colIndex - 1].innerText;
+                    let cellB = rowB.querySelectorAll('td')[colIndex - 1].innerText;
+
+                    if (colIndex === 3 || colIndex === 4) {
+                        cellA = cellA.split('\n')[0] || '';
+                        cellB = cellB.split('\n')[0] || '';
+                    }
+
+                    return cellA.localeCompare(cellB, undefined, {numeric: true}) * (currentDir === 'asc' ? 1 : -1);
+                })
+                .forEach(sortedRow => {
+                    tbody.appendChild(sortedRow);
+                });
         });
-    </script>
+    });
+</script>
+<script>
+    document.getElementById('reset-sort-btn').addEventListener('click', () => {
+        const tableBody = document.getElementById('banner-table-body');
+        const searchInput = document.getElementById('search-input');
+        const query = searchInput.value;
+
+        console.log("Resetting sort, fetching default server order...");
+
+        fetch(`/search-api?search=${encodeURIComponent(query)}`)
+            .then(response => response.text())
+            .then(html => {
+                tableBody.innerHTML = html;
+            })
+            .catch(error => console.error('Error fetching search results:', error));
+
+        document.querySelectorAll('th.sortable').forEach(headerCell => {
+            headerCell.dataset.sortDir = '';
+        });
+    });
+</script>
 </body>
 </html>

@@ -160,7 +160,6 @@ class BannerManager:
         global_banners_copy = list(global_list)
         used_global_banners = set()
 
-        # 1. Ітеруємо по кожній ПОДІЇ в Asia
         for b_asia in asia:
             merged = MergedBanner(
                 units=b_asia.units,
@@ -170,7 +169,6 @@ class BannerManager:
                 asia_type=b_asia.release_type
             )
 
-            # Шукаємо точну пару (персонаж + тип) на Global
             found_global_match = False
             for i, b_global in enumerate(global_banners_copy):
                 if i in used_global_banners:
@@ -184,8 +182,6 @@ class BannerManager:
                     found_global_match = True
                     break
 
-            # Якщо точної пари не знайдено, пробуємо знайти пару (персонаж + інший тип)
-            # Це для випадків як Hina (Asia 'rerun' -> Global 'new')
             if not found_global_match:
                 for i, b_global in enumerate(global_banners_copy):
                     if i in used_global_banners:
@@ -199,7 +195,6 @@ class BannerManager:
                         found_global_match = True
                         break
 
-            # Якщо пари взагалі не знайдено, прогнозуємо
             if not found_global_match and self._time_offset:
                 merged.global_start = b_asia.start + self._time_offset
                 merged.global_end = b_asia.end + self._time_offset
@@ -208,7 +203,6 @@ class BannerManager:
 
             final_list.append(merged)
 
-        # 2. Додаємо банери, які є ТІЛЬКИ на Global (напр. колаби)
         for i, b_global in enumerate(global_banners_copy):
             if i not in used_global_banners:
                 final_list.append(MergedBanner(
@@ -219,7 +213,6 @@ class BannerManager:
                     global_type=b_global.release_type
                 ))
 
-        # 3. Сортуємо за датою Global (реальною або прогнозованою)
         def get_sort_date(banner: MergedBanner):
             return banner.global_start or banner.asia_start or datetime.min
 
