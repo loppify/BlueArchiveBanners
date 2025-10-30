@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, make_response, redirect, url_for
 from predictor_logic import BannerManager
 from flask_caching import Cache
-import time
+import time, os
 
 app = Flask(__name__)
 
@@ -69,4 +69,7 @@ def get_banner_manager():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    is_debug = os.environ.get("DEBUG", "0").lower() in ("true", "1", "t")
+    host = '0.0.0.0'
+    port = int(os.environ.get("PORT", 5000))
+    app.run(debug=is_debug, host=host, port=port)
