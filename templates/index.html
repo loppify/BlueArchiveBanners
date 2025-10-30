@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Blue Archive Banner List</title>
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --text-color: #212529;
+            --card-bg: #ffffff;
+            --border-color: #dee2e6;
+            --link-color: #007bff;
+            --input-bg: #fff;
+            --input-border: #ccc;
+            --asia-color: #d9534f;
+            --global-color: #5bc0de;
+            --global-pred-color: #f0ad4e;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 2em;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        body.dark {
+            --bg-color: #1a1a1a;
+            --text-color: #e0e0e0;
+            --card-bg: #2a2a2a;
+            --border-color: #444;
+            --link-color: #58a6ff;
+            --input-bg: #333;
+            --input-border: #555;
+            --asia-color: #e57373;
+            --global-color: #81d4fa;
+            --global-pred-color: #ffd54f;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            padding: 20px;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: background-color 0.2s;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .theme-toggle {
+            padding: 8px 12px;
+            background-color: var(--border-color);
+            color: var(--text-color);
+            border: none;
+            border-radius: 4px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .theme-toggle:hover {
+            opacity: 0.8;
+        }
+
+        h1 {
+            color: var(--link-color);
+        }
+
+        form {
+            margin: 20px 0;
+        }
+
+        input[type="text"] {
+            width: 98%;
+            max-width: 500px;
+            padding: 10px;
+            font-size: 1em;
+            border: 1px solid var(--input-border);
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            border-radius: 4px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            text-align: left;
+            vertical-align: top;
+            font-size: 0.9em;
+        }
+
+        th {
+            background-color: var(--card-bg);
+        }
+
+        body.dark th {
+            background-color: #333;
+        }
+
+        img {
+            max-height: 50px;
+            border-radius: 4px;
+        }
+
+        .date-cell {
+            white-space: nowrap;
+        }
+
+        .date-cell span {
+            display: block;
+        }
+
+        .asia {
+            color: var(--asia-color);
+        }
+
+        .global {
+            color: var(--global-color);
+        }
+
+        .predicted {
+            color: var(--global-pred-color);
+            font-style: italic;
+        }
+    </style>
+</head>
+<body class="{{ theme }}">
+<div class="container">
+
+    <div class="header">
+        <h1>Blue Archive Banner List ({{ total_banners }} total)</h1>
+        {% if theme == 'dark' %}
+        <a href="/set-theme/light" class="theme-toggle">Light Mode ☀️</a>
+        {% else %}
+        <a href="/set-theme/dark" class="theme-toggle">Dark Mode 🌙</a>
+        {% endif %}
+    </div>
+
+    <div style="margin: 20px 0;">
+            <input type="text" id="search-input" value="{{ search_query or '' }}"
+                   placeholder="Search by unit, date (YYYY-MM-DD), or '(Predicted)'...">
+        </div>
+
+    <table>
+            <thead>
+                <tr>
+                    <th>Banner</th>
+                    <th>Units</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                </tr>
+            </thead>
+            <tbody id="banner-table-body">
+                {% include 'partials/table_rows.html' %}
+            </tbody>
+        </table>
+    </div>
+<script>
+    // Проста функція "debounce"
+    // Вона не дає відправляти запит на КОЖНУ букву, а чекає 300мс
+    let timeout = null;
+    const searchInput = document.getElementById('search-input');
+    const tableBody = document.getElementById('banner-table-body');
+
+    searchInput.addEventListener('keyup', function (e) {
+        clearTimeout(timeout);
+
+        timeout = setTimeout(function () {
+            const query = searchInput.value;
+
+            // Використовуємо Fetch API (AJAX)
+            fetch(`/search-api?search=${encodeURIComponent(query)}`)
+                .then(response => response.text())
+                .then(html => {
+                    // Миттєво замінюємо вміст таблиці
+                    tableBody.innerHTML = html;
+                })
+                .catch(error => console.error('Error fetching search results:', error));
+        }, 300); // Чекаємо 300мс після останнього натискання
+    });
+</script>
+</body>
+</html>
