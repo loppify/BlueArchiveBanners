@@ -207,18 +207,7 @@ marimo/_lsp/
 __marimo__/
 
 # IDE Files (PyCharm)
-.idea/workspace.xml
-.idea/tasks.xml
-.idea/libraries/
-.idea/vcs.xml
-.idea/shelf/
-.idea/sonarlint/
-.idea/dataSources.xml
-.idea/sqldialects.xml
-.idea/sqlDataSources.xml
-.idea/sshConfigs.xml
-.idea/dictionaries/
-.idea/webServers.xml
+.idea/
 
 .idea/modules.xml
 .idea/misc.xml
