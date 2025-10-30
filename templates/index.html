@@ -16,7 +16,6 @@
             --global-color: #5bc0de;
             --global-pred-color: #f0ad4e;
         }
-
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             margin: 0;
@@ -25,7 +24,6 @@
             color: var(--text-color);
             transition: background-color 0.2s, color 0.2s;
         }
-
         body.dark {
             --bg-color: #1a1a1a;
             --text-color: #e0e0e0;
@@ -38,17 +36,15 @@
             --global-color: #81d4fa;
             --global-pred-color: #ffd54f;
         }
-
         .container {
             max-width: 1200px;
             margin: auto;
             padding: 20px;
             background-color: var(--card-bg);
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             transition: background-color 0.2s;
         }
-
         .header {
             display: flex;
             justify-content: space-between;
@@ -56,7 +52,6 @@
             border-bottom: 1px solid var(--border-color);
             padding-bottom: 10px;
         }
-
         .theme-toggle {
             padding: 8px 12px;
             background-color: var(--border-color);
@@ -66,19 +61,9 @@
             text-decoration: none;
             cursor: pointer;
         }
-
-        .theme-toggle:hover {
-            opacity: 0.8;
-        }
-
-        h1 {
-            color: var(--link-color);
-        }
-
-        form {
-            margin: 20px 0;
-        }
-
+        .theme-toggle:hover { opacity: 0.8; }
+        h1 { color: var(--link-color); }
+        form { margin: 20px 0; }
         input[type="text"] {
             width: 98%;
             max-width: 500px;
@@ -89,74 +74,46 @@
             color: var(--text-color);
             border-radius: 4px;
         }
-
         table {
             border-collapse: collapse;
             width: 100%;
             margin-top: 20px;
         }
-
         th, td {
             border: 1px solid var(--border-color);
             padding: 10px;
-            text-align: left;
-            vertical-align: top;
+            text-align: center;
+            vertical-align: center;
             font-size: 0.9em;
         }
-
-        th {
-            background-color: var(--card-bg);
-        }
-
-        body.dark th {
-            background-color: #333;
-        }
-
-        img {
-            max-height: 50px;
-            border-radius: 4px;
-        }
-
-        .date-cell {
-            white-space: nowrap;
-        }
-
-        .date-cell span {
-            display: block;
-        }
-
-        .asia {
-            color: var(--asia-color);
-        }
-
-        .global {
-            color: var(--global-color);
-        }
-
-        .predicted {
-            color: var(--global-pred-color);
-            font-style: italic;
-        }
+        th { background-color: var(--card-bg); }
+        body.dark th { background-color: #333; }
+        img { max-height: 150px; border-radius: 4px; }
+        .date-cell { white-space: nowrap; }
+        .date-cell span { display: block; }
+        .asia { color: var(--asia-color); }
+        .global { color: var(--global-color); }
+        .predicted { color: var(--global-pred-color); font-style: italic; }
     </style>
 </head>
 <body class="{{ theme }}">
-<div class="container">
+    <div class="container">
 
-    <div class="header">
-        <h1>Blue Archive Banner List ({{ total_banners }} total)</h1>
-        {% if theme == 'dark' %}
-        <a href="/set-theme/light" class="theme-toggle">Light Mode ☀️</a>
-        {% else %}
-        <a href="/set-theme/dark" class="theme-toggle">Dark Mode 🌙</a>
-        {% endif %}
-    </div>
-
-    <div style="margin: 20px 0;">
-            <input type="text" id="search-input" value="{{ search_query or '' }}"
-                   placeholder="Search by unit, date (YYYY-MM-DD), or '(Predicted)'...">
+        <div class="header">
+            <h1>Blue Archive Banner List ({{ total_banners }} total)</h1>
+            {% if theme == 'dark' %}
+                <a href="/set-theme/light" class="theme-toggle">Light Mode ☀️</a>
+            {% else %}
+                <a href="/set-theme/dark" class="theme-toggle">Dark Mode 🌙</a>
+            {% endif %}
         </div>
 
-    <table>
+        <div style="margin: 20px 0;">
+            <input type="text" id="search-input" value="{{ search_query or '' }}"
+                   placeholder="Search by unit, date, or 'rerun'...">
+        </div>
+
+        <table>
             <thead>
                 <tr>
                     <th>Banner</th>
@@ -170,29 +127,26 @@
             </tbody>
         </table>
     </div>
-<script>
-    // Проста функція "debounce"
-    // Вона не дає відправляти запит на КОЖНУ букву, а чекає 300мс
-    let timeout = null;
-    const searchInput = document.getElementById('search-input');
-    const tableBody = document.getElementById('banner-table-body');
 
-    searchInput.addEventListener('keyup', function (e) {
-        clearTimeout(timeout);
+    <script>
+        let timeout = null;
+        const searchInput = document.getElementById('search-input');
+        const tableBody = document.getElementById('banner-table-body');
 
-        timeout = setTimeout(function () {
-            const query = searchInput.value;
+        searchInput.addEventListener('keyup', function (e) {
+            clearTimeout(timeout);
 
-            // Використовуємо Fetch API (AJAX)
-            fetch(`/search-api?search=${encodeURIComponent(query)}`)
-                .then(response => response.text())
-                .then(html => {
-                    // Миттєво замінюємо вміст таблиці
-                    tableBody.innerHTML = html;
-                })
-                .catch(error => console.error('Error fetching search results:', error));
-        }, 300); // Чекаємо 300мс після останнього натискання
-    });
-</script>
+            timeout = setTimeout(function () {
+                const query = searchInput.value;
+
+                fetch(`/search-api?search=${encodeURIComponent(query)}`)
+                    .then(response => response.text())
+                    .then(html => {
+                        tableBody.innerHTML = html;
+                    })
+                    .catch(error => console.error('Error fetching search results:', error));
+            }, 300);
+        });
+    </script>
 </body>
 </html>

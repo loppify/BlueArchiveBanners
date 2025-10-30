@@ -5,22 +5,22 @@
 
     <td class="date-cell">
         {% if banner.asia_start %}
-            <span class="asia">(Asia) {{ banner.start_str_asia }}</span>
+            <span class="asia">(Asia) {{ banner.start_str_asia }} [{{ banner.asia_type }}]</span>
         {% endif %}
         {% if banner.global_start %}
             <span class="{{ 'predicted' if banner.global_is_predicted else 'global' }}">
-                (Global) {{ banner.start_str_global }}
+                (Global) {{ banner.start_str_global }} [{{ banner.global_type }}]
             </span>
         {% endif %}
     </td>
 
     <td class="date-cell">
         {% if banner.asia_end %}
-            <span class="asia">(Asia) {{ banner.end_str_asia }}</span>
+            <span class="asia">(Asia) {{ banner.end_str_asia }} [{{ banner.asia_type }}]</span>
         {% endif %}
         {% if banner.global_end %}
             <span class="{{ 'predicted' if banner.global_is_predicted else 'global' }}">
-                (Global) {{ banner.end_str_global }}
+                (Global) {{ banner.end_str_global }} [{{ banner.global_type }}]
             </span>
         {% endif %}
     </td>
