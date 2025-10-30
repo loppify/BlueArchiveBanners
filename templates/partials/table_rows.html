@@ -1,35 +1,43 @@
 {% for banner in banners %}
-<tr>
-    <td><img src="{{ banner.image_url }}" alt="banner"></td>
-    <td>
-        <p>{{ banner.units|join(', ') }}</p>
-        <i>{{ banner.asia_type }}</i>
-    </td>
+    <tr>
+        <td class="text-center">
+            <img src="{{ banner.image_url }}" alt="banner" class="banner-img">
+        </td>
 
-    <td class="date-cell">
-        {% if banner.asia_start %}
-        <span class="asia">(Asia) {{ banner.start_str_asia }}</span>
-        {% endif %}
-        {% if banner.global_start %}
-        <span class="{{ 'predicted' if banner.global_is_predicted else 'global' }}">
+        <td class="units-cell">
+            <p class="mb-0 fw-bold">{{ banner.units|join(', ') }}</p>
+
+
+            <span class="small">
+                <i>{{ banner.global_type }}</i>
+            </span>
+
+        </td>
+
+        <td class="date-cell text-center">
+            {% if banner.asia_start %}
+                <span class="asia">(Asia) {{ banner.start_str_asia }}</span>
+            {% endif %}
+            {% if banner.global_start %}
+                <span class="{{ 'predicted' if banner.global_is_predicted else 'global' }}">
                 (Global) {{ banner.start_str_global }}
             </span>
-        {% endif %}
-    </td>
+            {% endif %}
+        </td>
 
-    <td class="date-cell">
-        {% if banner.asia_end %}
-        <span class="asia">(Asia) {{ banner.end_str_asia }}</span>
-        {% endif %}
-        {% if banner.global_end %}
-        <span class="{{ 'predicted' if banner.global_is_predicted else 'global' }}">
+        <td class="date-cell text-center">
+            {% if banner.asia_end %}
+                <span class="asia">(Asia) {{ banner.end_str_asia }}</span>
+            {% endif %}
+            {% if banner.global_end %}
+                <span class="{{ 'predicted' if banner.global_is_predicted else 'global' }}">
                 (Global) {{ banner.end_str_global }}
             </span>
-        {% endif %}
-    </td>
-</tr>
+            {% endif %}
+        </td>
+    </tr>
 {% else %}
-<tr>
-    <td colspan="4">No banners found matching your search.</td>
-</tr>
+    <tr>
+        <td colspan="4" class="text-center table-danger">No banners found matching your search.</td>
+    </tr>
 {% endfor %}
