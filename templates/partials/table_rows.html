@@ -1,17 +1,14 @@
 {% for banner in banners %}
-    <tr>
+    <tr data-units="{{ banner.units|join(', ') }}">
         <td class="text-center">
             <img src="{{ banner.image_url }}" alt="banner" class="banner-img">
         </td>
 
         <td class="units-cell">
             <p class="mb-0 fw-bold">{{ banner.units|join(', ') }}</p>
-
-
             <span class="small">
-                <i>{{ banner.global_type }}</i>
-            </span>
-
+            <i>{{ banner.global_type }}</i>
+        </span>
         </td>
 
         <td class="date-cell text-center">
@@ -35,9 +32,13 @@
             </span>
             {% endif %}
         </td>
+
+        <td class="text-center sentiment-cell-placeholder" data-units-key="{{ banner.units|join(', ') }}">
+            <span class="text-muted small">Loading...</span>
+        </td>
     </tr>
 {% else %}
     <tr>
-        <td colspan="4" class="text-center table-danger">No banners found matching your search.</td>
+        <td colspan="5" class="text-center table-danger">No banners found matching your search.</td>
     </tr>
 {% endfor %}

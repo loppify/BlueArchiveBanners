@@ -6,9 +6,7 @@
     <title>Blue Archive Banner List</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-          rel="stylesheet"
-          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
-          crossorigin="anonymous">
+          rel="stylesheet" crossorigin="anonymous">
 
     <style>
         :root {
@@ -16,90 +14,24 @@
             --global-color: #5bc0de;
             --global-pred-color: #f0ad4e;
         }
-
         [data-bs-theme="dark"] {
             --asia-color: #e57373;
             --global-color: #81d4fa;
             --global-pred-color: #ffd54f;
         }
-
-        .date-cell {
-            white-space: nowrap;
-        }
-
-        .date-cell span {
-            display: block;
-        }
-
-        .asia {
-            color: var(--asia-color);
-        }
-
-        .global {
-            color: var(--global-color);
-        }
-
-        .predicted {
-            color: var(--global-pred-color);
-            font-style: italic;
-        }
-
-        .banner-img {
-            max-height: 100px;
-            max-width: 200px;
-            width: auto;
-            object-fit: cover;
-            border-radius: 4px;
-        }
-
-        th {
-            white-space: nowrap;
-        }
-
-        .table {
-            font-size: 0.95em;
-        }
-
-        .units-cell {
-            text-align: left;
-            vertical-align: middle;
-            padding-left: 15px !important;
-        }
-
-        .banner-img {
-            /* 1. Розмір за замовчуванням (для мобільних) */
-            max-height: 100px;
-            max-width: 200px;
-            width: auto;
-            object-fit: cover;
-            border-radius: 4px;
-        }
-
-        @media (min-width: 768px) {
-            .banner-img {
-                max-height: 100%;
-                max-width: 600px;
-            }
-        }
-
-        th.sortable {
-            cursor: pointer;
-            user-select: none;
-            transition: background-color 0.2s;
-        }
-
-        th.sortable:hover {
-            background-color: var(--bs-table-hover-bg) !important;
-        }
+        .asia { color: var(--asia-color); }
+        .global { color: var(--global-color); }
+        .predicted { color: var(--global-pred-color); font-style: italic; }
+        .banner-img { max-height: 100px; max-width: 200px; object-fit: cover; border-radius: 4px; }
+        @media (min-width: 768px) { .banner-img { max-height: 100%; max-width: 600px; } }
+        th.sortable { cursor: pointer; user-select: none; transition: background-color .2s; }
+        th.sortable:hover { background-color: var(--bs-table-hover-bg) !important; }
     </style>
 </head>
 <body class="py-4">
-
 <div class="container">
-
     <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
         <h1 class="h1 text-primary mb-0">Blue Archive Banner List ({{ total_banners }} total)</h1>
-
         <div class="d-flex gap-2">
             <button id="reset-sort-btn" class="btn btn-outline-secondary btn-sm">Reset Sort</button>
             {% if theme == 'dark' %}
@@ -108,24 +40,22 @@
                 <a href="/set-theme/dark" class="btn btn-outline-dark btn-sm">Dark Mode 🌙</a>
             {% endif %}
         </div>
-
     </div>
+
     <h2>Global server banner prediction based on past Asia banners.</h2>
 
-    <div class="mb-3">
-        <input type="text" id="search-input" class="form-control form-control-lg"
-               value="{{ search_query or '' }}"
-               placeholder="Search by unit, date, or 'rerun'...">
-    </div>
+    <input type="text" id="search-input" class="form-control form-control-lg mb-3"
+           value="{{ search_query or '' }}" placeholder="Search by unit, date, or 'rerun'...">
 
     <div class="table-responsive">
         <table class="table table-bordered table-striped table-hover align-middle text-center">
             <thead>
             <tr class="sticky-top">
-                <th class="" data-sort-col="1">Banner</th>
+                <th data-sort-col="1">Banner</th>
                 <th class="sortable" data-sort-col="2">Units</th>
                 <th class="sortable" data-sort-col="3">Start Date</th>
                 <th class="sortable" data-sort-col="4">End Date</th>
+                <th class="sortable" id="score-header" data-sort-col="5">Community Score</th>
             </tr>
             </thead>
             <tbody id="banner-table-body">
@@ -135,75 +65,107 @@
     </div>
 
     <footer class="text-center text-muted mt-4">
-        <p>All banner data is sourced from
-            <a href="https://bluearchive.wiki/" target="_blank">bluearchive.wiki</a>.
-        </p>
+        <p>All banner data is sourced from <a href="https://bluearchive.wiki/" target="_blank">bluearchive.wiki</a>.</p>
         <p>This site is an independent fan project.</p>
     </footer>
-
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
 
 <script>
-    let timeout = null;
     const searchInput = document.getElementById('search-input');
     const tableBody = document.getElementById('banner-table-body');
 
-    searchInput.addEventListener('keyup', function (e) {
-        clearTimeout(timeout);
-        timeout = setTimeout(function () {
-            const query = searchInput.value;
-            fetch(`/search-api?search=${encodeURIComponent(query)}`)
-                .then(response => response.text())
+    function attachSentimentPlaceholders() {
+        document.querySelectorAll('#banner-table-body tr').forEach(row => {
+            if (row.cells.length === 4) {
+                const cell = document.createElement('td');
+                cell.className = 'text-center sentiment-cell-placeholder';
+                cell.innerHTML = '<span class="text-muted small">Loading...</span>';
+                row.appendChild(cell);
+            }
+        });
+    }
+
+    function updateTableSentiment() {
+        const header = document.getElementById('score-header');
+        document.querySelectorAll('.sentiment-cell-placeholder').forEach(cell => {
+            cell.innerHTML = '<span class="text-muted small">Analyzing...</span>';
+        });
+
+        fetch('/api/sentiment')
+            .then(r => r.json())
+            .then(payload => {
+                const list = payload.data || [];
+                const map = new Map(list.map(i => [i.units, {score: i.score, count: i.count}]));
+                const running = payload.running;
+
+                document.querySelectorAll('#banner-table-body tr').forEach(row => {
+                    const unitNames = row.querySelector('.units-cell p').innerText.trim();
+                    const cell = row.lastElementChild;
+                    if (map.has(unitNames)) {
+                        const {score, count} = map.get(unitNames);
+                        const s = parseFloat(score);
+                        const cls = s > 0.3 ? 'text-success' : s < -0.1 ? 'text-danger' : 'text-warning';
+                        cell.innerHTML = `<span class="fw-bold ${cls}">${s.toFixed(3)}</span>
+                                          <small class="text-muted d-block">(${count} reviews)</small>`;
+                        cell.classList.remove('sentiment-cell-placeholder');
+                    } else {
+                        cell.innerHTML = '<span class="text-muted small">N/A</span>';
+                    }
+                });
+
+                header.innerText = running ? 'Score (Updating...)' : 'Score';
+                if (running) setTimeout(updateTableSentiment, 5000);
+            })
+            .catch(e => {
+                console.error('Error loading sentiment:', e);
+                document.getElementById('score-header').innerText = 'Score (Error)';
+            });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        attachSentimentPlaceholders();
+        updateTableSentiment();
+    });
+
+    searchInput.addEventListener('keyup', e => {
+        clearTimeout(window._searchTimer);
+        window._searchTimer = setTimeout(() => {
+            fetch(`/search-api?search=${encodeURIComponent(searchInput.value)}`)
+                .then(r => r.text())
                 .then(html => {
                     tableBody.innerHTML = html;
-                })
-                .catch(error => console.error('Error fetching search results:', error));
+                    attachSentimentPlaceholders();
+                    updateTableSentiment();
+                });
         }, 300);
     });
 
-    document.querySelectorAll('th.sortable').forEach(headerCell => {
-        headerCell.addEventListener('click', () => {
-            const table = headerCell.closest('table');
-            const tbody = table.querySelector('tbody');
-            const colIndex = parseInt(headerCell.dataset.sortCol, 10);
-            const currentDir = headerCell.dataset.sortDir === 'asc' ? 'desc' : 'asc';
-            headerCell.dataset.sortDir = currentDir;
-
-            Array.from(tbody.querySelectorAll('tr'))
-                .sort((rowA, rowB) => {
-                    let cellA = rowA.querySelectorAll('td')[colIndex - 1].innerText;
-                    let cellB = rowB.querySelectorAll('td')[colIndex - 1].innerText;
-
-                    if (colIndex === 3 || colIndex === 4) {
-                        cellA = cellA.split('\n')[0] || '';
-                        cellB = cellB.split('\n')[0] || '';
-                    }
-
-                    return cellA.localeCompare(cellB, undefined, {numeric: true}) * (currentDir === 'asc' ? 1 : -1);
-                })
-                .forEach(sortedRow => {
-                    tbody.appendChild(sortedRow);
-                });
+    document.querySelectorAll('th.sortable').forEach(th => {
+        th.addEventListener('click', () => {
+            const idx = parseInt(th.dataset.sortCol, 10) - 1;
+            const dir = th.dataset.sortDir === 'asc' ? 'desc' : 'asc';
+            th.dataset.sortDir = dir;
+            const rows = Array.from(tableBody.querySelectorAll('tr'));
+            rows.sort((a,b)=>{
+                const ta=a.cells[idx].innerText.trim(), tb=b.cells[idx].innerText.trim();
+                return ta.localeCompare(tb,undefined,{numeric:true})*(dir==='asc'?1:-1);
+            }).forEach(r=>tableBody.appendChild(r));
         });
     });
 
     document.getElementById('reset-sort-btn').addEventListener('click', () => {
-        const query = searchInput.value;
         searchInput.value = '';
-        fetch(`/search-api?search=`)
-            .then(response => response.text())
+        fetch('/search-api?search=')
+            .then(r => r.text())
             .then(html => {
                 tableBody.innerHTML = html;
-            })
-            .catch(error => console.error('Error fetching search results:', error));
-
-        document.querySelectorAll('th.sortable').forEach(headerCell => {
-            headerCell.dataset.sortDir = '';
-        });
+                attachSentimentPlaceholders();
+                updateTableSentiment();
+            });
+        document.querySelectorAll('th.sortable').forEach(th => th.dataset.sortDir = '');
     });
 </script>
 </body>

@@ -1,7 +1,8 @@
 import sys
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Dict, Any
+from community_scraper import get_community_sentiment_score
 
 import requests
 from bs4 import BeautifulSoup
@@ -42,6 +43,8 @@ class MergedBanner:
     global_end: Optional[datetime] = None
     global_type: str = ""
     global_is_predicted: bool = False
+    community_score: Optional[float] = None
+    sentiment_count: int = 0
 
     @property
     def start_str_asia(self) -> str:
@@ -85,12 +88,14 @@ class BannerManager:
         self.merged_banners: List[MergedBanner] = []
         self._time_offset: Optional[timedelta] = None
 
-    def _fetch_html(self, url: str) -> str:
+    @staticmethod
+    def _fetch_html(url: str) -> str:
         response = requests.get(url, headers=HEADERS)
         response.raise_for_status()
         return response.text
 
-    def _parse_banners(self, html: str, source: str) -> List[Banner]:
+    @staticmethod
+    def _parse_banners(html: str, source: str) -> List[Banner]:
         soup = BeautifulSoup(html, "html.parser")
         rows = soup.select("table.wikitable tr")[1:]
         banners: List[Banner] = []
@@ -152,6 +157,28 @@ class BannerManager:
         else:
             print(f"❌ Could not find *any* match for {last_global_banner.units}. Prediction unavailable.")
 
+    @staticmethod
+    def get_community_sentiment_data(banners: List['MergedBanner']) -> List[Dict[str, Any]]:
+        """
+        Виконує аналіз тональності для всіх банерів,
+        що не мають даних про рейтинг.
+        Повертає список словників для подальшої обробки.
+        """
+        sentiment_data = []
+
+        for banner in banners:
+            if not banner.units:
+                continue
+
+            unit_names = ", ".join(banner.units)
+
+            sentiment_data.append({
+                'units': unit_names,
+                'is_analyzed': banner.community_score is not None
+            })
+
+        return sentiment_data
+
     def _merge_and_predict_data(self, asia: List[Banner], global_list: List[Banner]) -> List[MergedBanner]:
         print("Merging Asia and Global data...")
 
@@ -212,6 +239,8 @@ class BannerManager:
                     global_end=b_global.end,
                     global_type=b_global.release_type
                 ))
+
+        print("Finalizing merge (sentiment analysis skipped for async update)...")
 
         def get_sort_date(banner: MergedBanner):
             return banner.global_start or banner.asia_start or datetime.min
