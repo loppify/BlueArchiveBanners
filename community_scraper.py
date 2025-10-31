@@ -8,11 +8,6 @@ import praw
 from textblob import TextBlob
 from praw.models import Submission
 
-try:
-    from config import REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, REDDIT_USER_AGENT, USERNAME, PASSWORD
-except ImportError:
-    print("FATAL: config.py not found or keys missing. Cannot use Reddit API.", file=sys.stderr)
-    sys.exit(1)
 
 TARGET_SUBREDDIT = "BlueArchive"
 POST_LIMIT_PER_UNIT = 30
