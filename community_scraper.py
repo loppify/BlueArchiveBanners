@@ -9,18 +9,34 @@ from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from praw.models import Submission
 
 TARGET_SUBREDDIT = "BlueArchive"
-POST_LIMIT_PER_UNIT = 30
-COMMENT_DEPTH = 5
-ASSESSMENT_KEYWORDS = ['tier', 'worth', 'guide', 'review', 'pull']
+POST_LIMIT_PER_UNIT = 50
+COMMENT_DEPTH = 7
+ASSESSMENT_KEYWORDS = [
+    'tier', 'worth', 'guide', 'review', 'pull',
+    'analysis', 'breakdown', 'ranking', 'rating', 'verdict',
+    'impressions', 'overview', 'thoughts on', 'performance',
+    'utility', 'viability', 'meta', 'comparison',
+    'skip', 'roll', 'summon', 'F2P', 'investment', 'value',
+    'should I', 'how good', 'is she good', 'is he good',
+    'is... worth it', 'pull or skip', 'must pull',
+    'build', 'guide', 'best team', 'synergy', 'showcase',
+    'Total Assault', 'Raid', 'JFD', 'PvP', 'PVE'
+]
 AESTHETIC_FILTER_KEYWORDS = [
     'cute', 'pretty', 'waifu', 'design', 'gorgeous', 'art',
-    'best girl', 'adorable', 'charming', 'love', 'favorite'
+    'best girl', 'adorable', 'charming', 'love', 'favorite',
+    'beautiful', 'lovely', 'hot', 'sexy', 'kawaii', 'wholesome',
+    'husbando', 'best boy', 'precious', 'must protect', 'treasure',
+    'L2D', 'Live2D', 'animation', 'victory pose', 'lobby',
+    'outfit', 'costume', 'skin', 'hairstyle', 'eyes',
+    'thighs', 'booba', 'oppai', 'smol', 'smug', 'legs', 'feet',
+    'personality', 'voice', 'VA', 'seiyuu', 'voice lines',
+    'story', 'bond story', 'lore', 'backstory', 'relationship'
 ]
 GAMEPLAY_FOCUS_KEYWORDS = [
     'dps', 'damage', 'heal', 'healer', 'tank', 'shield', 'shielder',
     'meta', 'pve', 'pvp', 'utility', 'support', 'buffer', 'debuffer',
     'AoE', 'ST', 'single target', 'nuke', 'burst', 'sustain',
-
     'striker', 'special', 'student',
     'EX skill', 'sub-skill', 'passive skill', 'basic skill',
     'cost', 'skill cost', 'SP',
@@ -33,7 +49,6 @@ GAMEPLAY_FOCUS_KEYWORDS = [
     'gear', 'T1', 'T2', 'T8',
     'UE', 'Unique Equipment', 'Unique Weapon',
     'bond', 'L2D',
-
     'gacha', 'pull', 'roll', 'reroll',
     'spark', 'pity', 'banner',
     'Pyroxene', 'Pyro', 'Eleph', 'shard',
@@ -131,7 +146,7 @@ def _get_relevant_submissions(unit_name: str) -> List[Submission]:
     print(f"-> Searching EXACT: {query_exact}")
     submissions_exact = reddit.subreddit(TARGET_SUBREDDIT).search(
         query=query_exact,
-        sort='hot',
+        sort='top',
         time_filter='year',
         limit=POST_LIMIT_PER_UNIT
     )
@@ -144,7 +159,7 @@ def _get_relevant_submissions(unit_name: str) -> List[Submission]:
         print(f"-> Searching BASE: {query_base}")
         submissions_base = reddit.subreddit(TARGET_SUBREDDIT).search(
             query=query_base,
-            sort='hot',
+            sort='top',
             time_filter='year',
             limit=POST_LIMIT_PER_UNIT
         )
