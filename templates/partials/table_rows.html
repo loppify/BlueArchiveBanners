@@ -7,15 +7,16 @@
         <td class="units-cell">
             <p class="mb-0 fw-bold">{{ banner.units|join(', ') }}</p>
             <span class="small">
-            <i>{{ banner.global_type }}</i>
-        </span>
+                <i>{{ banner.global_type }}</i>
+            </span>
         </td>
 
         <td class="date-cell text-center">
             {% if banner.asia_start %}
-                <span class="asia">(Asia) {{ banner.start_str_asia }}</span>
+                <p class="asia">(Asia) {{ banner.start_str_asia }}</p>
             {% endif %}
             {% if banner.global_start %}
+
                 <span class="{{ 'predicted' if banner.global_is_predicted else 'global' }}">
                 (Global) {{ banner.start_str_global }}
             </span>
@@ -24,7 +25,7 @@
 
         <td class="date-cell text-center">
             {% if banner.asia_end %}
-                <span class="asia">(Asia) {{ banner.end_str_asia }}</span>
+                <p class="asia">(Asia) {{ banner.end_str_asia }}</p>
             {% endif %}
             {% if banner.global_end %}
                 <span class="{{ 'predicted' if banner.global_is_predicted else 'global' }}">

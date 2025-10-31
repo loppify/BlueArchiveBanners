@@ -5,13 +5,18 @@ import time
 from typing import List, Tuple, Optional
 
 import praw
-from textblob import TextBlob
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from praw.models import Submission
 
-
+analyzer = SentimentIntensityAnalyzer()
 TARGET_SUBREDDIT = "BlueArchive"
 POST_LIMIT_PER_UNIT = 30
 COMMENT_DEPTH = 5
+ASSESSMENT_KEYWORDS = ['tier', 'worth', 'guide', 'review', 'pull']
+AESTHETIC_FILTER_KEYWORDS = [
+    'cute', 'pretty', 'waifu', 'design', 'gorgeous', 'art',
+    'best girl', 'adorable', 'charming', 'love', 'favorite'
+]
 
 
 def get_auth_details():
@@ -49,14 +54,39 @@ except Exception as e:
 
 
 def _get_relevant_submissions(unit_name: str) -> List[Submission]:
-    search_query = f'"{unit_name}" OR {unit_name.split()[0]} tier guide worth'
+    submissions = []
+    keywords_part = " OR ".join(ASSESSMENT_KEYWORDS)
 
-    submissions = reddit.subreddit(TARGET_SUBREDDIT).search(
-        query=search_query,
-        sort='relevance',
+    query_exact = f'"{unit_name}" AND ({keywords_part})'
+
+    print(f"-> Searching EXACT: {query_exact}")
+    submissions_exact = reddit.subreddit(TARGET_SUBREDDIT).search(
+        query=query_exact,
+        sort='hot',
+        time_filter='year',
         limit=POST_LIMIT_PER_UNIT
     )
-    return list(submissions)
+    submissions.extend(list(submissions_exact))
+
+    if len(submissions) < 5:
+        base_name = unit_name.split('(')[0].strip()
+        query_base = f'"{base_name}" AND ({keywords_part})'
+
+        print(f"-> Searching BASE: {query_base}")
+        submissions_base = reddit.subreddit(TARGET_SUBREDDIT).search(
+            query=query_base,
+            sort='hot',
+            time_filter='year',
+            limit=POST_LIMIT_PER_UNIT
+        )
+
+        unique_submissions = set(submissions)
+        for sub in submissions_base:
+            if sub not in unique_submissions:
+                submissions.append(sub)
+                unique_submissions.add(sub)
+
+    return submissions
 
 
 def _analyze_comments(submission: Submission) -> Tuple[float, int]:
@@ -65,12 +95,25 @@ def _analyze_comments(submission: Submission) -> Tuple[float, int]:
     total_polarity = 0
     comment_count = 0
 
+    seen_comments = set()
+
     for comment in submission.comments.list():
-        if comment.body and not comment.body.startswith('The body of the comment is'):
-            analysis = TextBlob(comment.body)
-            if abs(analysis.sentiment.polarity) > 0.1:
-                total_polarity += analysis.sentiment.polarity
-                comment_count += 1
+        if comment.id in seen_comments or comment.body is None:
+            continue
+
+        seen_comments.add(comment.id)
+
+        if comment.body and len(comment.body) > 10 and not comment.body.startswith('The body of the comment is'):
+            is_aesthetic = any(keyword in comment.body.lower() for keyword in AESTHETIC_FILTER_KEYWORDS)
+            if is_aesthetic:
+                continue
+
+            vs = analyzer.polarity_scores(comment.body)
+            weight = comment.score if comment.score > 0 else 1
+
+            if abs(vs['compound']) > 0.1:
+                total_polarity += vs['compound'] * weight
+                comment_count += weight
 
     return total_polarity, comment_count
 
@@ -78,9 +121,7 @@ def _analyze_comments(submission: Submission) -> Tuple[float, int]:
 def get_community_sentiment_score(unit_name: str) -> Tuple[Optional[float], int]:
     """Основна функція: збирає дані, аналізує та повертає кінцевий рейтинг."""
 
-    unit_name_cleaned = re.sub(r'\(.*?\)', '', unit_name).strip()
-
-    submissions = _get_relevant_submissions(unit_name_cleaned)
+    submissions = _get_relevant_submissions(unit_name)
 
     if not submissions:
         print(f"-> No recent relevant Reddit submissions found for {unit_name}.")
@@ -90,6 +131,10 @@ def get_community_sentiment_score(unit_name: str) -> Tuple[Optional[float], int]
     overall_count = 0
 
     for sub in submissions:
+        # if 'daily questions megathread' in sub.title.lower() or 'daily advice megathread' in sub.title.lower():
+        #     print(f"-> Skipping MegaThread: {sub.title}")
+        #     continue
+
         print(f"-> Analyzing thread: {sub.title} ({sub.url})")
         thread_polarity, thread_count = _analyze_comments(sub)
 

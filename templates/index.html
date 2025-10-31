@@ -14,18 +14,49 @@
             --global-color: #5bc0de;
             --global-pred-color: #f0ad4e;
         }
+
         [data-bs-theme="dark"] {
             --asia-color: #e57373;
             --global-color: #81d4fa;
             --global-pred-color: #ffd54f;
         }
-        .asia { color: var(--asia-color); }
-        .global { color: var(--global-color); }
-        .predicted { color: var(--global-pred-color); font-style: italic; }
-        .banner-img { max-height: 100px; max-width: 200px; object-fit: cover; border-radius: 4px; }
-        @media (min-width: 768px) { .banner-img { max-height: 100%; max-width: 600px; } }
-        th.sortable { cursor: pointer; user-select: none; transition: background-color .2s; }
-        th.sortable:hover { background-color: var(--bs-table-hover-bg) !important; }
+
+        .asia {
+            color: var(--asia-color);
+        }
+
+        .global {
+            color: var(--global-color);
+        }
+
+        .predicted {
+            color: var(--global-pred-color);
+            font-style: italic;
+        }
+
+        .banner-img {
+            max-height: 100px;
+            max-width: 200px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        @media (min-width: 768px) {
+            .banner-img {
+                max-height: 100%;
+                max-width: 600px;
+            }
+        }
+
+        th.sortable {
+            cursor: pointer;
+            user-select: none;
+            transition: background-color .2s;
+        }
+
+        th.sortable:hover {
+            background-color: var(--bs-table-hover-bg) !important;
+        }
     </style>
 </head>
 <body class="py-4">
@@ -42,7 +73,8 @@
         </div>
     </div>
 
-    <h2>Global server banner prediction based on past Asia banners.</h2>
+    <h2 class="h2 text-secondary mb-0">Global server banner prediction based on past Asia banners.</h2>
+    <h2 class="h2 text-secondary mb-3">Score calculated from reviews on Reddit.</h2>
 
     <input type="text" id="search-input" class="form-control form-control-lg mb-3"
            value="{{ search_query or '' }}" placeholder="Search by unit, date, or 'rerun'...">
@@ -106,9 +138,9 @@
                     const cell = row.lastElementChild;
                     if (map.has(unitNames)) {
                         const {score, count} = map.get(unitNames);
-                        const s = parseFloat(score);
-                        const cls = s > 0.3 ? 'text-success' : s < -0.1 ? 'text-danger' : 'text-warning';
-                        cell.innerHTML = `<span class="fw-bold ${cls}">${s.toFixed(3)}</span>
+                        const s = 50+parseFloat(score)*50;
+                        const cls = s > 50+50*0.3 ? 'text-success' : s < 50+50*(-0.1) ? 'text-danger' : 'text-warning';
+                        cell.innerHTML = `<span class="fw-bold ${cls}">${s.toFixed(0)}</span>
                                           <small class="text-muted d-block">(${count} reviews)</small>`;
                         cell.classList.remove('sentiment-cell-placeholder');
                     } else {
@@ -149,10 +181,10 @@
             const dir = th.dataset.sortDir === 'asc' ? 'desc' : 'asc';
             th.dataset.sortDir = dir;
             const rows = Array.from(tableBody.querySelectorAll('tr'));
-            rows.sort((a,b)=>{
-                const ta=a.cells[idx].innerText.trim(), tb=b.cells[idx].innerText.trim();
-                return ta.localeCompare(tb,undefined,{numeric:true})*(dir==='asc'?1:-1);
-            }).forEach(r=>tableBody.appendChild(r));
+            rows.sort((a, b) => {
+                const ta = a.cells[idx].innerText.trim(), tb = b.cells[idx].innerText.trim();
+                return ta.localeCompare(tb, undefined, {numeric: true}) * (dir === 'asc' ? 1 : -1);
+            }).forEach(r => tableBody.appendChild(r));
         });
     });
 
