@@ -5,6 +5,7 @@ from typing import List, Tuple, Optional
 
 import praw
 from textblob import TextBlob
+from praw.models import Submission
 
 try:
     from config import REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, REDDIT_USER_AGENT, USERNAME, PASSWORD
@@ -13,8 +14,8 @@ except ImportError:
     sys.exit(1)
 
 TARGET_SUBREDDIT = "BlueArchive"
-POST_LIMIT_PER_UNIT = 15
-COMMENT_DEPTH = 3
+POST_LIMIT_PER_UNIT = 30
+COMMENT_DEPTH = 5
 
 try:
     reddit = praw.Reddit(
@@ -24,13 +25,13 @@ try:
         username=USERNAME,
         password=PASSWORD
     )
-    print(f"✅ Reddit PRAW client initialized.")
+    print(f"✅ Reddit PRAW client initialized and authenticated as: {reddit.user.me()}")
 except Exception as e:
     print(f"❌ PRAW initialization failed: {e}", file=sys.stderr)
     sys.exit(1)
 
 
-def _get_relevant_submissions(unit_name: str) -> List[praw.models.Submission]:
+def _get_relevant_submissions(unit_name: str) -> List[Submission]:
     search_query = f'"{unit_name}" OR {unit_name.split()[0]} tier guide worth'
 
     submissions = reddit.subreddit(TARGET_SUBREDDIT).search(
@@ -41,7 +42,7 @@ def _get_relevant_submissions(unit_name: str) -> List[praw.models.Submission]:
     return list(submissions)
 
 
-def _analyze_comments(submission: praw.models.Submission) -> Tuple[float, int]:
+def _analyze_comments(submission: Submission) -> Tuple[float, int]:
     submission.comments.replace_more(limit=COMMENT_DEPTH)
 
     total_polarity = 0
@@ -78,7 +79,7 @@ def get_community_sentiment_score(unit_name: str) -> Tuple[Optional[float], int]
         overall_polarity += thread_polarity
         overall_count += thread_count
 
-        time.sleep(1.5)
+        time.sleep(0.5)
 
     if overall_count == 0:
         return None, 0

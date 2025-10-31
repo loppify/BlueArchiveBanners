@@ -91,7 +91,7 @@
     function updateTableSentiment() {
         const header = document.getElementById('score-header');
         document.querySelectorAll('.sentiment-cell-placeholder').forEach(cell => {
-            cell.innerHTML = '<span class="text-muted small">Analyzing...</span>';
+            cell.innerHTML = '<span class="text-muted small">N/A</span>';
         });
 
         fetch('/api/sentiment')
@@ -112,7 +112,7 @@
                                           <small class="text-muted d-block">(${count} reviews)</small>`;
                         cell.classList.remove('sentiment-cell-placeholder');
                     } else {
-                        cell.innerHTML = '<span class="text-muted small">N/A</span>';
+                        cell.innerHTML = '<span class="text-muted small">Analyzing...</span>';
                     }
                 });
 
