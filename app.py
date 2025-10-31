@@ -5,6 +5,7 @@ import logging
 from threading import Thread, Lock
 from typing import Optional, List, Dict, Any
 
+import prawcore
 from flask import Flask, render_template, request, make_response, redirect, url_for, jsonify
 from flask_caching import Cache
 
@@ -19,8 +20,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-SENTIMENT_LOCK_TIMEOUT = 60 * 60 * 4         # 4 hours (keep lock for full cache lifetime)
-CACHE_TIMEOUT_SENTIMENT = 60 * 60 * 4        # 4 hours
+SENTIMENT_LOCK_TIMEOUT = 60 * 60 * 4  # 4 hours (keep lock for full cache lifetime)
+CACHE_TIMEOUT_SENTIMENT = 60 * 60 * 4  # 4 hours
 
 GLOBAL_SENTIMENT_LOCK_KEY = "sentiment_global_lock"
 
@@ -31,8 +32,8 @@ app.config.from_mapping({
 })
 cache = Cache(app)
 
-start_thread_lock = Lock()     # prevents race starting the worker thread (per-process)
-sentiment_thread: Optional[Thread] = None       # holds Thread instance when running (per-process)
+start_thread_lock = Lock()  # prevents race starting the worker thread (per-process)
+sentiment_thread: Optional[Thread] = None  # holds Thread instance when running (per-process)
 
 
 def _is_global_sentiment_running() -> bool:
@@ -91,24 +92,25 @@ def update_all_sentiments_background():
 
         for idx, banner in enumerate(manager.merged_banners, start=1):
             unit_key = " ".join(banner.units) if hasattr(banner, "units") else getattr(banner, "id", str(idx))
+            score_count = None
             try:
                 score_count = get_community_sentiment_score(unit_key)
-                score, count = None, 0
-                if isinstance(score_count, tuple) and len(score_count) >= 2:
-                    score, count = score_count[0], score_count[1]
-                elif isinstance(score_count, dict):
-                    score = score_count.get("score")
-                    count = score_count.get("count", 0)
-                else:
-                    score = score_count
-                    count = 0
-
-                data = {'score': score if score is not None else 'N/A', 'count': int(count or 0)}
-                _cache_sentiment_data(unit_key, data)
-                logger.info("[%d/%d] Updated %s: %s", idx, total, unit_key, data)
-            except Exception:
+            except prawcore.exceptions.TooManyRequests:
                 logger.exception("Failed sentiment for %s", unit_key)
+                time.sleep(300)
 
+            if isinstance(score_count, tuple) and len(score_count) >= 2:
+                score, count = score_count[0], score_count[1]
+            elif isinstance(score_count, dict):
+                score = score_count.get("score")
+                count = score_count.get("count", 0)
+            else:
+                score = score_count
+                count = 0
+
+            data = {'score': score if score is not None else 'N/A', 'count': int(count or 0)}
+            _cache_sentiment_data(unit_key, data)
+            logger.info("[%d/%d] Updated %s: %s", idx, total, unit_key, data)
         logger.info("[THREAD] Global sentiment worker finished successfully.")
     except Exception:
         logger.exception("[THREAD ERROR] Unhandled exception in sentiment worker")
@@ -228,6 +230,7 @@ def get_sentiment_scores():
         "count_cached": len(sentiment_results),
         "data": sentiment_results
     })
+
 
 if __name__ == '__main__':
     is_debug = os.environ.get("DEBUG", "0").lower() in ("true", "1", "t")

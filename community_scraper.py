@@ -10,17 +10,14 @@ from praw.models import Submission
 
 TARGET_SUBREDDIT = "BlueArchive"
 POST_LIMIT_PER_UNIT = 50
-COMMENT_DEPTH = 7
+COMMENT_DEPTH = 5
 ASSESSMENT_KEYWORDS = [
-    'tier', 'worth', 'guide', 'review', 'pull',
-    'analysis', 'breakdown', 'ranking', 'rating', 'verdict',
-    'impressions', 'overview', 'thoughts on', 'performance',
-    'utility', 'viability', 'meta', 'comparison',
-    'skip', 'roll', 'summon', 'F2P', 'investment', 'value',
-    'should I', 'how good', 'is she good', 'is he good',
-    'is... worth it', 'pull or skip', 'must pull',
-    'build', 'guide', 'best team', 'synergy', 'showcase',
-    'Total Assault', 'Raid', 'JFD', 'PvP', 'PVE'
+    'tier', 'ranking', 'review', 'analysis', 'impressions',
+    'worth', 'pull', 'skip', 'roll', 'summon', '"must pull"',
+    '"should I"', '"how good"',
+    'meta', 'utility', 'performance', 'viability',
+    'guide', 'build', 'synergy', 'investment', 'F2P', '"best team"',
+    '"Total Assault"', 'Raid', 'JFD', 'PvP', 'PVE'
 ]
 AESTHETIC_FILTER_KEYWORDS = [
     'cute', 'pretty', 'waifu', 'design', 'gorgeous', 'art',
