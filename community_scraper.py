@@ -18,37 +18,26 @@ TARGET_SUBREDDIT = "BlueArchive"
 POST_LIMIT_PER_UNIT = 30
 COMMENT_DEPTH = 5
 
-try:
-    CLIENT_ID = os.environ.get("REDDIT_CLIENT_ID")
-    CLIENT_SECRET = os.environ.get("REDDIT_CLIENT_SECRET")
 
-    if not CLIENT_ID or not CLIENT_SECRET:
-        from config import REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, REDDIT_USER_AGENT, USERNAME, PASSWORD
+def get_auth_details():
+    client_id = os.environ.get("REDDIT_CLIENT_ID")
+    client_secret = os.environ.get("REDDIT_CLIENT_SECRET")
 
-        CLIENT_ID = REDDIT_CLIENT_ID
-        CLIENT_SECRET = REDDIT_CLIENT_SECRET
-        USER_AGENT = REDDIT_USER_AGENT
-        REDDIT_USERNAME = USERNAME
-        REDDIT_PASSWORD = PASSWORD
+    if client_id and client_secret:
+        return client_id, client_secret, os.environ.get("REDDIT_USER_AGENT", "BlueArchivePredictor"), \
+            os.environ.get("REDDIT_USERNAME"), os.environ.get("REDDIT_PASSWORD")
     else:
-        USER_AGENT = os.environ.get("REDDIT_USER_AGENT", "BlueArchivePredictor")
-        REDDIT_USERNAME = os.environ.get("REDDIT_USERNAME")
-        REDDIT_PASSWORD = os.environ.get("REDDIT_PASSWORD")
+        try:
+            from config import REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, REDDIT_USER_AGENT, USERNAME, PASSWORD
 
-    reddit = praw.Reddit(
-        client_id=CLIENT_ID,
-        client_secret=CLIENT_SECRET,
-        user_agent=USER_AGENT,
-        username=REDDIT_USERNAME,
-        password=REDDIT_PASSWORD
-    )
-    print(f"✅ Reddit PRAW client initialized and authenticated as: {reddit.user.me()}")
-except ImportError:
-    print("FATAL: config.py not found locally. Ensure keys are set in environment.", file=sys.stderr)
-    sys.exit(1)
-except Exception as e:
-    print(f"❌ PRAW initialization failed: {e}", file=sys.stderr)
-    sys.exit(1)
+            return REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, REDDIT_USER_AGENT, USERNAME, PASSWORD
+
+        except ImportError:
+            print("FATAL: Reddit API keys missing. Check Render ENV or local config.py.", file=sys.stderr)
+            sys.exit(1)
+
+
+CLIENT_ID, CLIENT_SECRET, USER_AGENT, REDDIT_USERNAME, REDDIT_PASSWORD = get_auth_details()
 
 
 def _get_relevant_submissions(unit_name: str) -> List[Submission]:
