@@ -160,7 +160,7 @@ def get_community_sentiment_score(unit_name: str) -> Tuple[Optional[float], int]
         overall_polarity += thread_polarity
         overall_count += thread_count
 
-        time.sleep(0.5)
+        time.sleep(1)
 
     if overall_count == 0:
         return None, 0

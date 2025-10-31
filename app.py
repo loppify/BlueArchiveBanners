@@ -2,7 +2,6 @@ import os
 import sys
 import time
 import logging
-import threading
 from threading import Thread, Lock
 from typing import Optional, List, Dict, Any
 
@@ -229,59 +228,6 @@ def get_sentiment_scores():
         "count_cached": len(sentiment_results),
         "data": sentiment_results
     })
-
-
-@app.route('/status')
-def status():
-    try:
-        active_threads = [t.name for t in threading.enumerate()]
-        return jsonify({
-            "status": "OK",
-            "active_threads_count": len(active_threads),
-            "active_threads": active_threads,
-            "is_global_sentiment_running": _is_global_sentiment_running()
-        })
-    except Exception:
-        logger.exception("Error returning status.")
-        return jsonify({"status": "ERROR"}), 500
-
-
-@app.route('/admin/clear-cache')
-def clear_cache_route():
-    try:
-        cache.clear()
-        logger.info("[CACHE] Cleared manually.")
-        return jsonify({"ok": True})
-    except Exception:
-        logger.exception("Failed to clear cache.")
-        return jsonify({"ok": False}), 500
-
-
-@app.route('/cache-admin')
-def cache_admin():
-    try:
-        manager = get_banner_manager()
-        banner_keys = [" ".join(b.units) for b in manager.merged_banners]
-
-        cache_status = []
-        lock_active = cache.get(GLOBAL_SENTIMENT_LOCK_KEY) is not None
-
-        for unit_key in banner_keys:
-            sentiment_key = f'sentiment_data:{unit_key}'
-            sentiment_data = cache.get(sentiment_key)
-            status = {
-                'unit': unit_key,
-                'is_cached': sentiment_data is not None,
-                'is_locked': lock_active,
-                'score': sentiment_data.get('score', 'N/A') if isinstance(sentiment_data, dict) else 'N/A',
-            }
-            cache_status.append(status)
-
-        return jsonify(cache_status)
-    except Exception:
-        logger.exception("Error in cache-admin.")
-        return jsonify([]), 500
-
 
 if __name__ == '__main__':
     is_debug = os.environ.get("DEBUG", "0").lower() in ("true", "1", "t")
