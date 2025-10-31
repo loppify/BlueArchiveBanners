@@ -39,6 +39,19 @@ def get_auth_details():
 
 CLIENT_ID, CLIENT_SECRET, USER_AGENT, REDDIT_USERNAME, REDDIT_PASSWORD = get_auth_details()
 
+try:
+    reddit = praw.Reddit(
+        client_id=CLIENT_ID,
+        client_secret=CLIENT_SECRET,
+        user_agent=USER_AGENT,
+        username=REDDIT_USERNAME,
+        password=REDDIT_PASSWORD
+    )
+    print(f"✅ Reddit PRAW client initialized.")
+except Exception as e:
+    print(f"❌ PRAW initialization failed: {e}", file=sys.stderr)
+    sys.exit(1)
+
 
 def _get_relevant_submissions(unit_name: str) -> List[Submission]:
     search_query = f'"{unit_name}" OR {unit_name.split()[0]} tier guide worth'
