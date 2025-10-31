@@ -17,16 +17,71 @@ AESTHETIC_FILTER_KEYWORDS = [
     'best girl', 'adorable', 'charming', 'love', 'favorite'
 ]
 GAMEPLAY_FOCUS_KEYWORDS = [
-    'dps', 'skill', 'raid', 'meta', 'pve', 'pvp', 'utility', 'boss',
-    'damage', 'heal', 'tank', 'ex skill', 'skill point'
+    'dps', 'damage', 'heal', 'healer', 'tank', 'shield', 'shielder',
+    'meta', 'pve', 'pvp', 'utility', 'support', 'buffer', 'debuffer',
+    'AoE', 'ST', 'single target', 'nuke', 'burst', 'sustain',
+
+    'striker', 'special', 'student',
+    'EX skill', 'sub-skill', 'passive skill', 'basic skill',
+    'cost', 'skill cost', 'SP',
+    'raid', 'Total Assault', 'boss', 'JFD',
+    'cover', 'positioning',
+    'armor type', 'damage type', 'affinity', 'counter',
+    'Red', 'Blue', 'Yellow', 'Purple',
+    'Light Armor', 'Heavy Armor', 'Special Armor',
+    'Explosive', 'Piercing', 'Mystic', 'Sonic',
+    'gear', 'T1', 'T2', 'T8',
+    'UE', 'Unique Equipment', 'Unique Weapon',
+    'bond', 'L2D',
+
+    'gacha', 'pull', 'roll', 'reroll',
+    'spark', 'pity', 'banner',
+    'Pyroxene', 'Pyro', 'Eleph', 'shard',
+    'F2P', 'whale', 'farm', 'grind', 'sweep'
 ]
 VADER_CUSTOM_LEXICON = {
-    'shreds': 3.5,
-    'broken': 3.0,
-    'gimped': -3.0,
+    'must pull': 3.5,
+    'broken': 3.5,
+    'OP': 3.5,
+    'insane': 3.0,
+    'core': 3.0,
+    'essential': 3.0,
+    'shreds': 2.5,
+    'future-proof': 2.5,
+    'meta-defining': 3.0,
+
+    'top-tier': 2.5,
+    'meta': 2.0,
+    'clutch': 2.0,
+    'great utility': 2.0,
+    'solid': 1.5,
+    'F2P friendly': 2.0,
+    'works well': 1.5,
+
+    'niche': 0.5,
+    'situational': 0.5,
+    'decent': 1.0,
+    'waifu > meta': 0.0,
+    'gear-dependent': -0.5,
+
+    'underwhelming': -1.5,
+    'disappointing': -2.0,
+    'cope': -2.0,
+    'copium': -2.0,
+    'outdated': -2.5,
+    'powercrept': -2.5,
+    'gimped': -2.5,
+
+    'skip': -3.0,
+    'bait': -3.0,
+    'bait banner': -3.5,
     'trash': -3.5,
-    'must pull': 3.0,
-    'whale': -2.0,
+    'useless': -3.5,
+    'dead weight': -3.0,
+
+    'whale': -1.5,
+    'whale unit': -1.5,
+    'high investment': -1.0
 }
 
 analyzer = SentimentIntensityAnalyzer()

@@ -138,8 +138,8 @@
                     const cell = row.lastElementChild;
                     if (map.has(unitNames)) {
                         const {score, count} = map.get(unitNames);
-                        const s = 50+parseFloat(score)*50;
-                        const cls = s > 50+50*0.3 ? 'text-success' : s < 50+50*(-0.1) ? 'text-danger' : 'text-warning';
+                        const s = (parseFloat(score)+1)*50;
+                        const cls = s > (1+0.3)*50 ? 'text-success' : s < (1-0.1)*50 ? 'text-danger' : 'text-warning';
                         cell.innerHTML = `<span class="fw-bold ${cls}">${s.toFixed(0)}</span>
                                           <small class="text-muted d-block">(${count} reviews)</small>`;
                         cell.classList.remove('sentiment-cell-placeholder');
