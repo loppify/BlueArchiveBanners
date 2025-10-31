@@ -99,7 +99,7 @@ def _get_relevant_submissions(unit_name: str) -> List[Submission]:
             if sub not in unique_submissions:
                 submissions.append(sub)
                 unique_submissions.add(sub)
-
+    time.sleep(0.5)
     return submissions
 
 
