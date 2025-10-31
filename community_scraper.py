@@ -1,3 +1,4 @@
+import os
 import re
 import sys
 import time
@@ -18,14 +19,33 @@ POST_LIMIT_PER_UNIT = 30
 COMMENT_DEPTH = 5
 
 try:
+    CLIENT_ID = os.environ.get("REDDIT_CLIENT_ID")
+    CLIENT_SECRET = os.environ.get("REDDIT_CLIENT_SECRET")
+
+    if not CLIENT_ID or not CLIENT_SECRET:
+        from config import REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, REDDIT_USER_AGENT, USERNAME, PASSWORD
+
+        CLIENT_ID = REDDIT_CLIENT_ID
+        CLIENT_SECRET = REDDIT_CLIENT_SECRET
+        USER_AGENT = REDDIT_USER_AGENT
+        REDDIT_USERNAME = USERNAME
+        REDDIT_PASSWORD = PASSWORD
+    else:
+        USER_AGENT = os.environ.get("REDDIT_USER_AGENT", "BlueArchivePredictor")
+        REDDIT_USERNAME = os.environ.get("REDDIT_USERNAME")
+        REDDIT_PASSWORD = os.environ.get("REDDIT_PASSWORD")
+
     reddit = praw.Reddit(
-        client_id=REDDIT_CLIENT_ID,
-        client_secret=REDDIT_CLIENT_SECRET,
-        user_agent=REDDIT_USER_AGENT,
-        username=USERNAME,
-        password=PASSWORD
+        client_id=CLIENT_ID,
+        client_secret=CLIENT_SECRET,
+        user_agent=USER_AGENT,
+        username=REDDIT_USERNAME,
+        password=REDDIT_PASSWORD
     )
     print(f"✅ Reddit PRAW client initialized and authenticated as: {reddit.user.me()}")
+except ImportError:
+    print("FATAL: config.py not found locally. Ensure keys are set in environment.", file=sys.stderr)
+    sys.exit(1)
 except Exception as e:
     print(f"❌ PRAW initialization failed: {e}", file=sys.stderr)
     sys.exit(1)
