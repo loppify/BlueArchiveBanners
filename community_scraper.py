@@ -8,7 +8,6 @@ import praw
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from praw.models import Submission
 
-analyzer = SentimentIntensityAnalyzer()
 TARGET_SUBREDDIT = "BlueArchive"
 POST_LIMIT_PER_UNIT = 30
 COMMENT_DEPTH = 5
@@ -17,6 +16,21 @@ AESTHETIC_FILTER_KEYWORDS = [
     'cute', 'pretty', 'waifu', 'design', 'gorgeous', 'art',
     'best girl', 'adorable', 'charming', 'love', 'favorite'
 ]
+GAMEPLAY_FOCUS_KEYWORDS = [
+    'dps', 'skill', 'raid', 'meta', 'pve', 'pvp', 'utility', 'boss',
+    'damage', 'heal', 'tank', 'ex skill', 'skill point'
+]
+VADER_CUSTOM_LEXICON = {
+    'shreds': 3.5,
+    'broken': 3.0,
+    'gimped': -3.0,
+    'trash': -3.5,
+    'must pull': 3.0,
+    'whale': -2.0,
+}
+
+analyzer = SentimentIntensityAnalyzer()
+analyzer.lexicon.update(VADER_CUSTOM_LEXICON)
 
 
 def get_auth_details():
@@ -104,6 +118,11 @@ def _analyze_comments(submission: Submission) -> Tuple[float, int]:
         seen_comments.add(comment.id)
 
         if comment.body and len(comment.body) > 10 and not comment.body.startswith('The body of the comment is'):
+            is_gameplay_context = any(kw in comment.body.lower() for kw in GAMEPLAY_FOCUS_KEYWORDS)
+
+            if not is_gameplay_context:
+                continue
+
             is_aesthetic = any(keyword in comment.body.lower() for keyword in AESTHETIC_FILTER_KEYWORDS)
             if is_aesthetic:
                 continue
